@@ -38,7 +38,7 @@ void setup() {
 }
 
 void loop() {
-   Ydeger = analogRead(Ypin);
+   Ydeger = analogRead(Ypin);// Ypin okuma
   Xdeger = analogRead(Xpin);
    Ymap = map(Ydeger,0,1023,0,180);
   Xmap = map(Xdeger,0,1023,0,150);
