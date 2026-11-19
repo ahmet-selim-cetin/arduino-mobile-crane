@@ -16,6 +16,11 @@ BluetoothSerial SerialBT;
 
 String sayi;
 int aci=0;
+int hedefAciFR = 90;          // gidilmek istenen açı
+int mevcutAciFR = 90;         // servonun şu anki açısı
+
+unsigned long sonServoZaman = 0;
+const int servoAralik = 15;   // ms, küçültürsen hızlanır, büyütürsen yavaşlar
 
 void setup() {
   Serial.begin(115200);
@@ -78,7 +83,18 @@ void loop() {
       sayi = data.substring(index + 1);
     }
 
-  
+    if (data.startsWith("Yjs") && if (sayi == " None")){
+        hedefAciFR = 90;
+      } else {
+        hedefAciFR = map(sayi.toInt(), 0, 1023, 0, 180);
+        hedefAciFR = constrain(hedefAciFR, 0, 180);
+      }
+    }
+
+        // FR servoyu yavaş yavaş hedefe götür
+    if (millis() - sonServoZaman >= servoAralik) {
+      sonServoZaman = millis();
+
     if (data == "Right"){
       aci = aci + 5;
       VINCservo.write(aci);
@@ -107,20 +123,19 @@ void loop() {
       analogWrite(enA,0);
     }
 
-    if (data.startsWith("Yjs")){  
-      int sayiServoMap = map(sayi.toInt(),0,1023,0,180);
-        for (int d = 0;d < sayiServoMap;d++){
-          FRservo.write(d);
-        }
-        delay(30);
-    }
-
-    if (data.startsWith("Yjs") && sayi == " None"){
-      FRservo.write(90);
+    if (mevcutAciFR < hedefAciFR) {
+        mevcutAciFR++;
+        FRservo.write(mevcutAciFR);
+      } else if (mevcutAciFR > hedefAciFR) {
+        mevcutAciFR--;
+        FRservo.write(mevcutAciFR);
+      }
     }
 
     if (data.startsWith("Xjs") && sayi.toInt() < 490){
       int sayiMotMap = map(sayi.toInt(),0,490,230,0);
+      digitalWrite(in1,LOW);
+      digitalWrite(in2,HIGH);
       digitalWrite(in3,HIGH);
       digitalWrite(in4,LOW);
       analogWrite(enB,sayiMotMap);
